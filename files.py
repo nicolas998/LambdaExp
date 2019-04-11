@@ -20,10 +20,10 @@ def Files_makeFolder(path):
 
 def Files_Read_Qo_Q190(link, listEvents = False, umbral = 50):
     #Read observed
-    Qo = pd.read_msgpack('/Users/nicolas/LambaExp/BaseData/USGS/'+link+'.msg')
+    Qo = pd.read_msgpack('/Users/nicolas/LambdaExp/BaseData/USGS/'+link+'.msg')
     Qo = Qo.resample('H').mean()
     #Read simulated
-    Qs = pd.read_msgpack('/Users/nicolas/LambaExp/BaseData/HLM190/'+link+'.msg')
+    Qs = pd.read_msgpack('/Users/nicolas/LambdaExp/BaseData/HLM190/'+link+'.msg')
     Qs = Qs.resample('H').mean()
     #Find events
     pos1, pos2 = ser.Runoff_FindEvents(Qo, Qs, umbral = umbral)

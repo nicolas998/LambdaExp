@@ -168,9 +168,9 @@ class Event:
             Lista.append('rm '+l)
         self.execute(WarpQsub, Lista)
 
-    def CreateBashFile(self, name=None, status = 'update',nprocess = 8, 
+    def CreateBashFile(self, name=None, status = 'update',nprocess = 8,
         path = None,d1=None, d2=None, linkID = None, rcs = None, lam = None,
-        last = False):
+        last = False, first = 'no'):
         #Open the files and writes the header
         if status == 'start':
             self.f = open(path, 'w')
@@ -184,13 +184,17 @@ class Event:
                 self.f.write('mpirun -np '+str(nprocess)+' asynch $path_exec/'+name+'.gbl\n')
         #Closes one iterarion
         if status == 'cepoc':
-            self.f.write('python analyze.py '+str(linkID)+' '+d1+' '+d2+' '+self.path+' ') 
+            self.f.write('python analyze.py '+str(linkID)+' '+d1+' '+d2+' '+self.path+' ')
             self.f.write(' '+lam+' -r ')
             for r in rcs:
                 self.f.write(str(r)+' ')
+            if first == 'si':
+                self.f.write('-f si')
             self.f.write('\n')
         #Closes the file 
         if status == 'close':
+            self.f.write('mv ' + self.path + '/SimStreamflow.csv ' + name+'\n')
+            self.f.write('rm '+self.path+'/ForRun/*.gbl')
             self.f.close()
             print('End writing bash file at: '+self.path)
 
