@@ -11,6 +11,7 @@ import pandas as pd
 from multiprocessing import Pool
 import os
 import glob
+from ifis_tools import auxiliar as aux
 
 ################################################################################################################
 #PARAMETERS PARSE
@@ -65,11 +66,12 @@ fl.Files_makeFolder(fl.Evento.path)
 fl.Files_makeFolder(fl.Evento.path+'/Initial')
 fl.Files_makeFolder(fl.Evento.path+'/ForRun')
 fl.Files_makeFolder(fl.Evento.path+'/Results')
+fl.WriteControlSav(fl.Evento.path+'/ForRun/control.sav', args.link)
+
 
 ################################################################################################################
 #CREATES FILES FOR RUN
 ###############################################################################################################
-
 #Creates the dates for the execution
 Dates = pd.date_range(
     fl.Evento.dateStartEvent,
@@ -77,20 +79,21 @@ Dates = pd.date_range(
     freq = args.dt)
 #First initial condition 
 Initial = fl.Evento.path+'/ForRun/initial.dbc'
-def WarpFunc(Lista): 
-    #Write the project
-    fl.Evento.Setups_Write(
-        fl.Evento.path+'/ForRun/',
-        fl.Evento.path+'/Results/',
-        Lista[0],
-        d_initial,
-        d_end,
-        args.link,
-        str(args.lam), Lista[1],
-        path2gbl = fl.Evento.path+'/ForRun/',
-        Initial = Initial,
-        Snapshots = fl.Evento.path+'/Initial/'+Lista[0]+'.h5'
-    )
+
+#def WarpFunc(Lista): 
+#    #Write the project
+#    fl.Evento.Setups_Write(
+#        fl.Evento.path+'/ForRun/',
+#        fl.Evento.path+'/Results/',
+#        Lista[0],
+#        d_initial,
+#        d_end,
+#        args.link,
+#        str(args.lam), Lista[1],
+#        path2gbl = fl.Evento.path+'/ForRun/',
+#        Initial = Initial,
+#        Snapshots = fl.Evento.path+'/Initial/'+Lista[0]+'.h5'
+#    )
 
 def WarpFunc(Lista):
     #Updates Global file
@@ -121,14 +124,28 @@ fl.Evento.CreateBashFile(status = 'start', path = './Run_'+dateText+'.sh')
 for d1, d2 in zip(Dates[:-1], Dates[1:]):
     #Dates in string format
     d_initial = d1.strftime('%Y-%m-%d %H:%M')
-    #d2t = d2 - pd.Timedelta('1min')
     d_end = d2.strftime('%Y-%m-%d %H:%M')
     #Creates the list for execution
+    unix1 = str(aux.__datetime2unix__(d_initial)+12*3600.)
+    unix2 = str(aux.__datetime2unix__(d_end)+12*3600.)
+    #Iterates 
     Lista = []
     for c,rc in enumerate(args.rc):
         #Name of the project
         name = d1.strftime('%Y%m%d%H%M')+'_'+str(c)
-        Lista.append([name,str(rc),c]) 
+        #Parameters
+        param = '[6 0.75 %s -0.2 %s 0.1 2.2917e-05]' % (args.lam, str(rc))
+        #List for that run
+        L = [d_initial, d_end, params, args.link, initFlag,
+            Initial, unix1, unix2,
+            fl.Evento.path+'/Results/'+name+'.dat',
+            fl.Evento.path+'/ForRun/control.sav',
+            fl.Evento.path+'/Initial/'+name+'.h5',
+            '3','',
+            fl.Evento.path+'/ForRun/'+name+'.gbl'
+            ]
+        #Updates the list 
+        Lista.append(L)
         #If it is the last comand of that epoc dont put the upersand
         if c == len(args.rc)-1:
             #Updates exec file 
