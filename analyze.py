@@ -27,7 +27,7 @@ parser.add_argument("link",help="Link of Iowa to be analyzed ")
 parser.add_argument('d1', type=lambda d: datetime.datetime.strptime(d, '%Y-%m-%d-%H%M'))
 parser.add_argument("d2", type=lambda d: datetime.datetime.strptime(d, '%Y-%m-%d-%H%M'))
 parser.add_argument("folder",help = "folder with the data")
-parser.add_argument("lam",type=str,help="List with the Lambda values to iterate", )
+parser.add_argument("lam",type=str,help="Strgin with the value of lambd, used for the record", )
 parser.add_argument("-r","--rc",nargs='+',type=float,help="List with the RC values to iterate")
 parser.add_argument("-f","--first",default = 'no', type = str)
 args=parser.parse_args()
@@ -82,9 +82,9 @@ BestRute = ''
 BestH5 = ''
 Eold = 99999
 #List of simulations and initial conditions
-ListH5 = glob.glob(args.folder+'/Initial/*.h5')
+ListH5 = glob.glob(args.folder+'/Initial/*_'+args.lam+'.h5')
 ListH5.sort()
-ListSim = glob.glob(args.folder+'/Results/*.dat')
+ListSim = glob.glob(args.folder+'/Results/*_'+args.lam+'.dat')
 ListSim.sort()
 #Iterates for all records to compae who is the best
 for l1,l2 in zip(ListSim, ListH5):

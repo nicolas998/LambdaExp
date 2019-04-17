@@ -194,7 +194,7 @@ class Event:
         #Closes the file 
         if status == 'close':
             self.f.write('mv ' + self.path + '/SimStreamflow.csv ' + name+'\n')
-            self.f.write('rm '+self.path+'/ForRun/*.gbl')
+            #self.f.write('rm '+self.path+'/ForRun/*.gbl')
             self.f.close()
             print('End writing bash file at: '+self.path)
 
