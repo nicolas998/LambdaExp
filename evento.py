@@ -23,10 +23,10 @@ class Event:
         self.Q190 = None
         self.setups_prev = False
 
-    def SetupBashHeader(self):
+    def SetupBashHeader(self, name):
         self.BashLines=[
             '#!/bin/sh\n',
-            '#$ -N lambdaExp\n',
+            '#$ -N '+name+'\n',
             '#$ -j y\n',
             '#$ -cwd\n',
             '#$ -pe smp 18\n',
@@ -193,7 +193,7 @@ class Event:
             self.f.write('\n')
         #Closes the file 
         if status == 'close':
-            self.f.write('mv ' + self.path + '/SimStreamflow.csv ' + name+'\n')
+            self.f.write('mv ' + self.path + '/Results/Qsim_'+lam+'.csv ' + name+'\n')
             #self.f.write('rm '+self.path+'/ForRun/*.gbl')
             self.f.close()
             print('End writing bash file at: '+self.path)

@@ -79,8 +79,9 @@ fl.Evento.dateStartEvent = fl.Evento.pos1[numEvent] - pd.Timedelta(args.start)
 fl.Evento.dateEndEvent = fl.Evento.pos2[numEvent] + pd.Timedelta(args.end)
 #Create the folder for the selected event
 dateText = fl.Evento.dateStartEvent.strftime('%Y%m%d-%H%M')
+dateShort = fl.Evento.dateStartEvent.strftime('%Y%m%d')
 fl.Evento.path = fullPath+'/'+dateText
-fl.Evento.SetupBashHeader()
+
 fl.Evento.SetTemplate(args.globalfile)
 fl.Files_makeFolder(fl.Evento.path)
 fl.Files_makeFolder(fl.Evento.path+'/Initial')
@@ -117,6 +118,7 @@ for lam in args.lam:
     lamb = str(lam)
     lambdaName = lamb.replace('.','')
     #Starts to write the bash file for the overall exec
+    fl.Evento.SetupBashHeader('N'+dateShort+'_'+lambdaName)
     fl.Evento.CreateBashFile(status = 'start',
         path ='./Run_'+dateText+'_'+lambdaName+'.sh')
 
@@ -131,8 +133,8 @@ for lam in args.lam:
         d_initial = d1.strftime('%Y-%m-%d %H:%M')
         d_end = d2.strftime('%Y-%m-%d %H:%M')
         #Creates the list for execution
-        unix1 = str(aux.__datetime2unix__(d_initial))#+12*3600)
-        unix2 = str(aux.__datetime2unix__(d_end))#+12*3600)
+        unix1 = str(aux.__datetime2unix__(d_initial)+12*3600)
+        unix2 = str(aux.__datetime2unix__(d_end)+12*3600)
         #Iterates 
         Lista = []
         for c,rc in enumerate(args.rc):
@@ -162,7 +164,7 @@ for lam in args.lam:
         p.close()
         p.join()
         #Changes the initial 
-        Initial = fl.Evento.path+'/ForRun/Initial.h5'
+        Initial = fl.Evento.path+'/ForRun/Initial_'+lambdaName+'.h5'
         initFlag = '4'
         #Closes one epoc at the exec file
         fl.Evento.CreateBashFile(status = 'cepoc',
@@ -178,7 +180,7 @@ for lam in args.lam:
     print('########################################################')
     #Closes the bash file for execution 
     name = args.link+'_'+lambdaName+'_'+Dates[0].strftime('%Y%m%d%H%M')+'.csv'
-    fl.Evento.CreateBashFile(status = 'close', name = name)
+    fl.Evento.CreateBashFile(status = 'close', name = name, lam = lambdaName)
 
 
 
