@@ -78,7 +78,7 @@ def ErrorEstimator(qobs, qsim):
 Qo = pd.read_msgpack('/Users/nicolas/LambdaExp/BaseData/USGS/'+args.link+'.msg')
 Qo.index = Qo.index
 #Initial state of some variables 
-Best = '0'
+Best = 0
 BestRute = ''
 BestH5 = ''
 Eold = 99999
@@ -87,10 +87,11 @@ name = d1.strftime('%Y%m%d%H%M')+'_*_'+args.lam
 #ListH5 = glob.glob(args.folder+'/Initial/*_'+args.lam+'.h5')
 ListH5 = glob.glob(args.folder+'/Initial/'+name+'.h5')
 ListH5.sort()
+print(ListH5)
 #ListSim = glob.glob(args.folder+'/Results/*_'+args.lam+'.dat')
 ListSim = glob.glob(args.folder+'/Results/'+name+'.dat')
 ListSim.sort()
-
+print(ListSim)
 #Find the best one
 Values = []
 for l1 in ListSim:
@@ -99,17 +100,20 @@ for l1 in ListSim:
     Qs = Qs.resample('30min').mean()
     Values.append(Qs.values)
 Values = np.array(Values)
-E = np.abs(Values - Qo[Qs.index].values)
-#E = np.abs(Values[:,-1] - Qo[Qs.index][-1])
+#E = np.abs(Values - Qo[Qs.index].values)
+E = np.abs(Values[:,-1] - Qo[Qs.index][-1])
 #Best = np.argmin(np.nanmean(E,axis = 1))
 Best = np.argmin(E)
+print(Best)
+print(len(ListSim))
 BestRute = ListSim[Best]
 BestH5 = ListH5[Best]
 BestRc = args.rc[Best]
 
 print('#################################################')
 print('El mejor')
-print(BestRc, np.nanmean(E,axis = 1)[Best])
+#rint(BestRc, np.nanmean(E,axis = 1)[Best])
+print(BestRc, E[Best])
 print('#################################################')
 
 

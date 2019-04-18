@@ -133,8 +133,8 @@ for lam in args.lam:
         d_initial = d1.strftime('%Y-%m-%d %H:%M')
         d_end = d2.strftime('%Y-%m-%d %H:%M')
         #Creates the list for execution
-        unix1 = str(aux.__datetime2unix__(d_initial)+12*3600)
-        unix2 = str(aux.__datetime2unix__(d_end)+12*3600)
+        unix1 = str(aux.__datetime2unix__(d_initial))#+12*3600)
+        unix2 = str(aux.__datetime2unix__(d_end))#+12*3600)
         #Iterates 
         Lista = []
         for c,rc in enumerate(args.rc):
