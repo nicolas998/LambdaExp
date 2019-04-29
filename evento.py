@@ -29,7 +29,7 @@ class Event:
             '#$ -N '+name+'\n',
             '#$ -j y\n',
             '#$ -cwd\n',
-            '#$ -pe smp 18\n',
+            '#$ -pe smp 56\n',
             '####$ -l mf=16G\n',
             '#$ -q IFC\n',
             '#$ -M nicolas-giron@uiowa.edu\n',

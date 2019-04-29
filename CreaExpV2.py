@@ -10,6 +10,7 @@ import files as fl
 import pandas as pd
 from multiprocessing import Pool
 import os
+import numpy as np
 import glob
 from ifis_tools import auxiliar as aux
 
@@ -66,6 +67,8 @@ args=parser.parse_args()
 #DEPLOYS FOLDERS
 ###############################################################################################################
 fullPath = 'Links/'+args.link
+#fullPath = '/localscratch/Users/nicolas/'+args.link
+
 
 #Test if there is a folder for that link if not, makes it
 fl.Files_makeFolder(fullPath)
@@ -168,7 +171,8 @@ for lam in args.lam:
         initFlag = '4'
         #Closes one epoc at the exec file
         fl.Evento.CreateBashFile(status = 'cepoc',
-            linkID = args.link, 
+            linkID = args.link,
+            nprocess = np.floor(56/len(args.lam)),
             d1 = d1.strftime('%Y-%m-%d-%H%M'),
             d2 = d2.strftime('%Y-%m-%d-%H%M'),
             rcs = args.rc,
