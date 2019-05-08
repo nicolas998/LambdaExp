@@ -29,11 +29,11 @@ class Event:
             '#$ -N '+name+'\n',
             '#$ -j y\n',
             '#$ -cwd\n',
-            '#$ -pe smp 56\n',
+            '#$ -pe smp 28\n',
             '####$ -l mf=16G\n',
             '#$ -q IFC\n',
-            '#$ -M nicolas-giron@uiowa.edu\n',
-            '#$ -m e\n',
+            #'#$ -M nicolas-giron@uiowa.edu\n',
+            #'#$ -m e\n',
             '/bin/echo Running on host: `hostname`.\n',
             '/bin/echo In directory: `pwd`\n',
             '/bin/echo Starting on: `date`\n',
@@ -170,7 +170,7 @@ class Event:
 
     def CreateBashFile(self, name=None, status = 'update',nprocess = 8,
         path = None,d1=None, d2=None, linkID = None, rcs = None, lam = None,
-        last = False, first = 'no'):
+        last = False, first = 'no', erase = False):
         #Open the files and writes the header
         if status == 'start':
             self.f = open(path, 'w')
@@ -193,8 +193,10 @@ class Event:
             self.f.write('\n')
         #Closes the file 
         if status == 'close':
-            self.f.write('mv ' + self.path + '/Results/Qsim_'+lam+'.csv ' + name+'\n')
+            self.f.write('mv ' + self.path + '/Results/Qsim_'+lam+'.csv ' +'Results/'+name+'\n')
             #self.f.write('rm '+self.path+'/ForRun/*.gbl')
+            if erase:
+                self.f.write('rm ' + self.path + '/ForRun/*_'+lam+'.*\n')
             self.f.close()
             print('End writing bash file at: '+self.path)
 

@@ -59,8 +59,10 @@ parser.add_argument("-s","--start", default = '0h',
 parser.add_argument("-e","--end", default = '0h', 
     help="extra time added at the end of the event")
 parser.add_argument("-g","--globalfile", default='190BaseGlobal.gbl')
-parser.add_argument("-u","--umbral", default = 50, type = int, 
+parser.add_argument("-u","--umbral", default = 50, type = float, 
     help="threshold to determine the magnitude of the peak values")
+parser.add_argument("-d","--delete", action='store_true')
+parser.add_argument("-a","--mindays", default = 15, type = int)
 args=parser.parse_args()
 
 ################################################################################################################
@@ -73,7 +75,7 @@ fullPath = 'Links/'+args.link
 #Test if there is a folder for that link if not, makes it
 fl.Files_makeFolder(fullPath)
 #Read the streamflow data and find the peaks.
-fl.Files_Read_Qo_Q190(args.link, True, umbral = args.umbral)
+fl.Files_Read_Qo_Q190(args.link, True, umbral = args.umbral, MinDays = args.mindays)
 #ASk for the event to be evaluated
 numEvent = input('Put the number of the event to eval: \n')
 numEvent = int(numEvent)
@@ -172,7 +174,7 @@ for lam in args.lam:
         #Closes one epoc at the exec file
         fl.Evento.CreateBashFile(status = 'cepoc',
             linkID = args.link,
-            nprocess = np.floor(56/len(args.lam)),
+            nprocess = np.floor(28/len(args.lam)),
             d1 = d1.strftime('%Y-%m-%d-%H%M'),
             d2 = d2.strftime('%Y-%m-%d-%H%M'),
             rcs = args.rc,
@@ -184,7 +186,8 @@ for lam in args.lam:
     print('########################################################')
     #Closes the bash file for execution 
     name = args.link+'_'+lambdaName+'_'+Dates[0].strftime('%Y%m%d%H%M')+'.csv'
-    fl.Evento.CreateBashFile(status = 'close', name = name, lam = lambdaName)
+    fl.Evento.CreateBashFile(status = 'close', name = name, lam = lambdaName, 
+        erase = args.delete)
 
 
 

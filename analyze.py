@@ -10,6 +10,24 @@ import argparse
 import datetime
 import glob
 
+
+#Function to estimate the error
+def ErrorEstimator(qobs, qsim):
+    qobs = qobs.values
+    qsim = qsim.values
+    c = 1
+    flag = True
+    while flag:
+        if np.isfinite(qobs[-c]):
+            Error = np.abs((qobs[-c] - qsim[-c]))
+            flag = False
+            return Error, 0
+        else:
+            c+=1
+        if c>=qobs.size:
+            flag = False
+            return -9, 1
+
 ################################################################################################################
 #PARAMETERS PARSE
 ################################################################################################################
@@ -37,43 +55,6 @@ args=parser.parse_args()
 ###############################################################################################################
 d1 = pd.Timestamp(args.d1)
 d2 = pd.Timestamp(args.d2)
-
-#def ErrorEstimator(qobs, qsim):
-#    p = np.where(np.isfinite(qobs))[0]
-#    if p.size / qobs.size > 0.2:
-#        Error = np.abs((qobs[p] - qsim[p])/qobs[p])
-#        return Error.mean(), 0
-#    else:
-#        return -9, 1
-
-
-#def ErrorEstimator(qobs, qsim):
-#    p = np.where(np.isfinite(qobs))[0]
-#    if p.size / qobs.size > 0.2:
-#        Vo = qobs[p].sum()
-#        Vs = qsim[p].sum()
-#        Error = np.abs(Vo - Vs)
-#        return Error, 0
-#    else:
-#        return -9, 1
-
-def ErrorEstimator(qobs, qsim):
-    qobs = qobs.values
-    qsim = qsim.values
-    c = 1
-    flag = True
-    while flag:
-        if np.isfinite(qobs[-c]):
-            Error = np.abs((qobs[-c] - qsim[-c]))
-            flag = False
-            return Error, 0
-        else:
-            c+=1
-        if c>=qobs.size:
-            flag = False
-            return -9, 1
-
-
 #Observed data
 Qo = pd.read_msgpack('/Users/nicolas/LambdaExp/BaseData/USGS/'+args.link+'.msg')
 Qo.index = Qo.index
@@ -85,13 +66,16 @@ Eold = 99999
 #List of simulations and initial conditions
 name = d1.strftime('%Y%m%d%H%M')+'_*_'+args.lam
 #ListH5 = glob.glob(args.folder+'/Initial/*_'+args.lam+'.h5')
-ListH5 = glob.glob(args.folder+'/Initial/'+name+'.h5')
-ListH5.sort()
-print(ListH5)
-#ListSim = glob.glob(args.folder+'/Results/*_'+args.lam+'.dat')
-ListSim = glob.glob(args.folder+'/Results/'+name+'.dat')
-ListSim.sort()
-print(ListSim)
+flag = True
+while flag:
+    ListH5 = glob.glob(args.folder+'/Initial/'+name+'.h5')
+    ListH5.sort()
+    #ListSim = glob.glob(args.folder+'/Results/*_'+args.lam+'.dat')
+    ListSim = glob.glob(args.folder+'/Results/'+name+'.dat')
+    ListSim.sort()
+    #Check if there are all the files 
+    if len(ListH5) == len(args.rc) and len(ListSim) == len(args.rc):
+        flag = False
 #Find the best one
 Values = []
 for l1 in ListSim:
@@ -115,28 +99,6 @@ print('El mejor')
 #rint(BestRc, np.nanmean(E,axis = 1)[Best])
 print(BestRc, E[Best])
 print('#################################################')
-
-
-##Iterates for all records to compae who is the best
-#for l1,l2 in zip(ListSim, ListH5):
-#    #Obtaines the number of the run
-#    Run = l1.split('_')[1].split('.')[0]
-#    #Obtains the data
-#    data = am.ASYNCH_results(l1)
-#    Qs = data.ASYNCH_dat2Serie(args.link, args.d1, '15min')
-#    Qs = Qs.resample('30min').mean()
-#    #Qs.index = Qs.index - pd.Timedelta('12h')
-#    Enew,status = ErrorEstimator(Qo[Qs.index], Qs)
-#    if Enew < Eold:
-#        Eold = Enew
-#        Best = Run
-#        BestRute = l1
-#        BestH5 = l2
-#        BestRc = args.rc[int(Run)]
-#        print('####################################################################')
-#        print('EL mejooooor')
-#        print(Run, Eold)
-#        print('####################################################################')
 #Replace initial conditions
 os.system('cp '+BestH5+' '+args.folder+'/ForRun/Initial_'+args.lam+'.h5')
 #Cleans the bad initial files.

@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from ifis_tools import series_tools as ser
+from ifis_tools import database_tools as db
 import numpy as np
 import evento as events
 import glob
@@ -18,27 +19,59 @@ def Files_makeFolder(path):
     else:
         print(Warnings['FolderExist'])
 
-def Files_Read_Qo_Q190(link, listEvents = False, umbral = 50):
+def Files_Read_Qo_Q190(link, listEvents = False, umbral = 0.5, MinDays = 15):
     #Read observed
-    Qo = pd.read_msgpack('/Users/nicolas/LambdaExp/BaseData/USGS/'+link+'.msg')
+    try:
+        Qo = pd.read_msgpack('/Users/nicolas/LambdaExp/BaseData/USGS/'+link+'.msg')
+    except:
+        #Read information from the links 
+        LinksData = pd.read_msgpack('LinkData.msg')
+        USGS_id = LinksData.index[LinksData['Link'] == int(link)].values[0]
+        #Read from the web.
+        print('Warning: reading from the web...')
+        Qo = db.WEB_Get_USGS(USGS_id, '2008-01-01','2018-12-30')
+        Qo.to_msgpack('/Users/nicolas/LambdaExp/BaseData/USGS/'+link+'.msg')
+        print('Message: Streamflow saved as a msgpack as link:'+ link)
     Qo = Qo.resample('H').mean()
     #Read simulated
     Qs = pd.read_msgpack('/Users/nicolas/LambdaExp/BaseData/HLM190/'+link+'.msg')
     Qs = Qs.resample('H').mean()
     #Find events
+    shared = Qo.index.intersection(Qs.index)
+    Qs = Qs[shared]
+    Qo = Qo[shared]
     pos1, pos2 = ser.Runoff_FindEvents(Qo, Qs, umbral = umbral)
+    #Estimates the max anual Streeamflow
+    QmaxA = np.median(Qo.resample('A').max())
+    Qbase = Qo.resample('A').apply(lambda x: np.percentile(x[np.isfinite(x)],50)).mean()
+    #Selects only the good events
+    pos1V2 = []
+    pos2V2 = []
+    for i,j in zip(pos1,pos2):
+        M = Qo[i:j].max()
+        if M>QmaxA*umbral:
+            #Check amount of nans.        
+            NaNPercent = Qo[i:j][np.isnan(Qo[i:j])].size / Qo[i:j].size
+            if NaNPercent < 0.2:
+                #Check the time between peak and strt of the event
+                while Qo[i]<Qbase*2.5:
+                    i = i + pd.Timedelta('5h')
+            Td = j - i
+            if Td.days < MinDays:
+                pos1V2.append(i)
+                pos2V2.append(j)
     #List the events
     if listEvents:
         c = 0
-        for p1, p2 in zip(pos1, pos2):
+        for p1, p2 in zip(pos1V2, pos2V2):
             qp = '%.2f ' % np.nanmax(Qo[p1:p2])
             print(c, qp, p1)
             c+=1
     #Updates the class Evento 
     Evento.Qobs = Qo
     Evento.Qsim = Qs
-    Evento.pos1 = pos1
-    Evento.pos2 = pos2
+    Evento.pos1 = pos1V2
+    Evento.pos2 = pos2V2
 
 def WriteControlSav(path, link):
     f = open(path, 'w')

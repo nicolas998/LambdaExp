@@ -15,10 +15,11 @@ for i in $(ls Run_$1*); do
         hidd=$(qsub -hold_jid $hid -terse $i)
         echo $hidd" depende de "$hid
     fi
-    
+    sleep 0.5s
+
     #Increas the counter and check for change of flag
     ((++var))
-    if [ $var -eq 5 ]
+    if [ $var -eq 4 ]
     then 
         if [ $flag -eq 1 ]
         then

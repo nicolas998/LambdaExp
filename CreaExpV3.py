@@ -58,8 +58,9 @@ parser.add_argument("-s","--start", default = '0h',
 parser.add_argument("-e","--end", default = '0h', 
     help="extra time added at the end of the event")
 parser.add_argument("-g","--globalfile", default='190BaseGlobal.gbl')
-parser.add_argument("-u","--umbral", default = 50, type = int, 
+parser.add_argument("-u","--umbral", default = 0.5, type = float,
     help="threshold to determine the magnitude of the peak values")
+parser.add_argument("-a","--days", help="max number of days of an event",default= 20, type = int)
 args=parser.parse_args()
 
 ################################################################################################################
@@ -70,7 +71,7 @@ fullPath = 'Links/'+args.link
 #Test if there is a folder for that link if not, makes it
 fl.Files_makeFolder(fullPath)
 #Read the streamflow data and find the peaks.
-fl.Files_Read_Qo_Q190(args.link, True, umbral = args.umbral)
+fl.Files_Read_Qo_Q190(args.link, True, umbral = args.umbral, MinDays=args.days)
 #ASk for the event to be evaluated
 numEvent = input('Put the number of the event to eval (-1 for all): \n')
 numEvent = int(numEvent)
@@ -124,7 +125,7 @@ for numEvent in range(len(fl.Evento.pos1)):
         #Starts to write the bash file for the overall exec
         fl.Evento.SetupBashHeader('N'+dateShort+'_'+lambdaName)
         fl.Evento.CreateBashFile(status = 'start',
-            path ='./Run_'+dateText+'_'+lambdaName+'.sh')
+            path ='./Run_'+str(args.link)+'_'+dateText+'_'+lambdaName+'.sh')
 
         #First initial condition 
         Initial = fl.Evento.path+'/ForRun/initial.dbc'
@@ -151,7 +152,7 @@ for numEvent in range(len(fl.Evento.pos1)):
                     Initial, unix1, unix2,
                     fl.Evento.path+'/Results/'+name+'.dat',
                     fl.Evento.path+'/ForRun/control.sav',
-                    fl.Evento.path+'/Initial/'+name+'.h5', 
+                    fl.Evento.path+'/Initial/'+name+'.h5',
                     fl.Evento.path+'/ForRun/'+name+'.gbl'
                     ]
                 #Updates the list 
@@ -184,7 +185,8 @@ for numEvent in range(len(fl.Evento.pos1)):
         print('########################################################')
         #Closes the bash file for execution 
         name = args.link+'_'+lambdaName+'_'+Dates[0].strftime('%Y%m%d%H%M')+'.csv'
-        fl.Evento.CreateBashFile(status = 'close', name = name, lam = lambdaName)
+        fl.Evento.CreateBashFile(status = 'close', name = name,
+            lam =lambdaName,erase = True)
     print('Creates data for next event')
 
 
