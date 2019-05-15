@@ -78,6 +78,6 @@ for Event in Events:
 
 #Saves the json of that link
 j = json.dumps(BigPerf)
-f = open("Results/"+args.link+'_summary.json',"w")
+f = open("Summary/"+args.link+'_summary.json',"w")
 f.write(j)
 f.close()
